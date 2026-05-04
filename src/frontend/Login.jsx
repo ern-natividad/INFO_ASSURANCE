@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "./Login.css";
+import "../Login.css";
 
 const BANNED = ["123admin", "123456", "qwerty", "admin"];
 

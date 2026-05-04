@@ -1,15 +1,35 @@
 import { useState } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate, Link } from "react-router-dom";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "./assets/vite.svg";
-import heroImg from "./assets/hero.png";
 import "./App.css";
-import Login from "./Login.jsx";
+import Login from "./frontend/Login.jsx";
+import LessonLayout from "./frontend/pages/LessonLayout.jsx";
+import HTTPBasics from "./frontend/pages/HTTPBasics.jsx";
+import HTTPProxies from "./frontend/pages/HTTPProxies.jsx";
+import CIATriad from "./frontend/pages/CIATriad.jsx";
+import Assessment from "./frontend/pages/Assessment.jsx";
+
+function Dashboard() {
+  return (
+    <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+      <h1>Welcome to Secure Authentication Demo</h1>
+      <p>
+        Successfully logged in! Explore our WebGoat security lesson below.
+      </p>
+      <div style={{ marginTop: '2rem' }}>
+        <Link to="/lesson/1" className="lesson-link">
+          Start SQL Injection Lesson 
+        </Link>
+      </div>
+    </div>
+  );
+}
 
 function App() {
   const [loggedIn, setLoggedIn] = useState(
     () => !!sessionStorage.getItem("loggedIn"),
   );
-  const [count, setCount] = useState(0);
 
   if (!loggedIn) {
     return (
@@ -23,114 +43,46 @@ function App() {
   }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+    <Router>
+      <div style={{ backgroundColor: 'white', minHeight: '100vh', padding: '2rem' }}>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/lesson" element={<Navigate to="/lesson/1" replace />} />
+          <Route 
+            path="/lesson/1" 
+            element={
+              <LessonLayout title="HTTP Basics Concepts and Activities">
+                <HTTPBasics />
+              </LessonLayout>
+            } 
+          />
+          <Route 
+            path="/lesson/2" 
+            element={
+              <LessonLayout title="HTTP Proxies">
+                <HTTPProxies />
+              </LessonLayout>
+            } 
+          />
+          <Route 
+            path="/lesson/3" 
+            element={
+              <LessonLayout title="CIA Triad">
+                <CIATriad />
+              </LessonLayout>
+            } 
+          />
+          <Route 
+            path="/lesson/4" 
+            element={
+              <LessonLayout title="Assessment">
+                <Assessment />
+              </LessonLayout>
+            } 
+          />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
