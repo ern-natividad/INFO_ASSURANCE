@@ -1,10 +1,16 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import LessonNavigation from '../components/LessonNavigation.jsx';
 
 export default function LessonLayout({ children, title }) {
   return (
     <div className="lesson-container">
-      <h2>WebGoat Security Lesson: SQL Injection</h2>
+      <div className="lesson-header">
+        <h2>{title}</h2>
+        <Link to="/login" className="logout-btn">
+          🚪 Logout
+        </Link>
+      </div>
       
       <LessonNavigation />
 

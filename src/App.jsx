@@ -33,12 +33,19 @@ function App() {
 
   if (!loggedIn) {
     return (
-      <Login
-        onLogin={() => {
-          sessionStorage.setItem("loggedIn", "1");
-          setLoggedIn(true);
-        }}
-      />
+      <Router>
+        <Routes>
+          <Route path="/login" element={
+            <Login
+              onLogin={() => {
+                sessionStorage.setItem("loggedIn", "1");
+                setLoggedIn(true);
+              }}
+            />
+          } />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </Router>
     );
   }
 
@@ -46,6 +53,7 @@ function App() {
     <Router>
       <div style={{ backgroundColor: 'white', minHeight: '100vh', padding: '2rem' }}>
         <Routes>
+          <Route path="/login" element={<Login />} />
           <Route path="/" element={<Dashboard />} />
           <Route path="/lesson" element={<Navigate to="/lesson/1" replace />} />
           <Route 

@@ -1,7 +1,8 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../Login.css";
 
-const BANNED = ["123admin", "123456", "qwerty", "admin"];
+const BANNED = ["123admin", "123456", "qwerty", "admin", "password", "letmein"];
 
 function isAlphanumeric(s) {
   return /^[A-Za-z0-9]+$/.test(s);
@@ -11,21 +12,39 @@ function hasLetterAndNumber(s) {
 }
 function containsSqlLike(s) {
   if (!s) return false;
-  return /\b(select|insert|update|delete|drop|union|exec|declare)\b|--|;|\/\*|\*\/|\bor\b|\band\b|=/.test(
+  return /\b(select|insert|update|delete|drop|union|exec|declare)\b|--|;|\/\*|\*\/|\bor\b|\band\b|=|'|"|<|>/.test(
     s.toLowerCase(),
   );
 }
+function containsXssLike(s) {
+  if (!s) return false;
+  return /<script|<\/script>|javascript:|onload=|onerror=|onclick=/i.test(s);
+}
+function validateUsername(username) {
+  if (!username || username.length < 3) return false;
+  if (username.length > 20) return false;
+  if (!isAlphanumeric(username)) return false;
+  return true;
+}
 
 export default function Login({ onLogin = () => {} }) {
+  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   function validate() {
+    // Username validation
     if (!username.trim()) return { ok: false, message: "Username is required" };
+    if (!validateUsername(username))
+      return { ok: false, message: "Username must be 3-20 alphanumeric characters" };
+    
+    // Password validation
     if (!password || password.length < 8)
       return { ok: false, message: "Password must be at least 8 characters" };
+    if (password.length > 128)
+      return { ok: false, message: "Password is too long" };
     if (!isAlphanumeric(password))
       return {
         ok: false,
@@ -36,6 +55,8 @@ export default function Login({ onLogin = () => {} }) {
         ok: false,
         message: "Password must include letters and numbers",
       };
+    
+    // Security checks
     const low = password.toLowerCase();
     for (const b of BANNED) {
       if (low.includes(b))
@@ -46,6 +67,9 @@ export default function Login({ onLogin = () => {} }) {
     }
     if (containsSqlLike(password) || containsSqlLike(username))
       return { ok: false, message: "Input contains unsafe patterns" };
+    if (containsXssLike(password) || containsXssLike(username))
+      return { ok: false, message: "Input contains potentially dangerous content" };
+    
     return { ok: true };
   }
 
@@ -69,6 +93,7 @@ export default function Login({ onLogin = () => {} }) {
         setMessage("Login successful");
         try {
           onLogin();
+          navigate("/");
         } catch (e) {
           /* ignore */
         }
@@ -76,7 +101,7 @@ export default function Login({ onLogin = () => {} }) {
         setMessage(data?.error || "Login failed");
       }
     } catch (err) {
-      setMessage("Network error");
+      setMessage("Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -114,10 +139,6 @@ export default function Login({ onLogin = () => {} }) {
           {loading ? "Signing in…" : "Sign in"}
         </button>
       </form>
-      <div className="login-note">
-        Password: min 8 alphanumeric characters, include letters and numbers.
-        Common weak passwords are forbidden.
-      </div>
     </div>
   );
 }
