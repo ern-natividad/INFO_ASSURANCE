@@ -4,6 +4,7 @@ import reactLogo from "./assets/react.svg";
 import viteLogo from "./assets/vite.svg";
 import "./App.css";
 import Login from "./frontend/Login.jsx";
+import SignUp from "./frontend/SignUp.jsx";
 import LessonLayout from "./frontend/pages/LessonLayout.jsx";
 import HTTPBasics from "./frontend/pages/HTTPBasics.jsx";
 import HTTPProxies from "./frontend/pages/HTTPProxies.jsx";
@@ -30,18 +31,30 @@ function App() {
   const [loggedIn, setLoggedIn] = useState(
     () => !!sessionStorage.getItem("loggedIn"),
   );
+  const [showSignUp, setShowSignUp] = useState(false);
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("loggedIn");
+    setLoggedIn(false);
+    setShowSignUp(false);
+  };
 
   if (!loggedIn) {
     return (
       <Router>
         <Routes>
           <Route path="/login" element={
-            <Login
-              onLogin={() => {
-                sessionStorage.setItem("loggedIn", "1");
-                setLoggedIn(true);
-              }}
-            />
+            showSignUp ? (
+              <SignUp onSwitchToLogin={() => setShowSignUp(false)} />
+            ) : (
+              <Login
+                onLogin={() => {
+                  sessionStorage.setItem("loggedIn", "1");
+                  setLoggedIn(true);
+                }}
+                onSwitchToSignUp={() => setShowSignUp(true)}
+              />
+            )
           } />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
@@ -59,7 +72,7 @@ function App() {
           <Route 
             path="/lesson/1" 
             element={
-              <LessonLayout title="HTTP Basics Concepts and Activities">
+              <LessonLayout title="HTTP Basics Concepts and Activities" onLogout={handleLogout}>
                 <HTTPBasics />
               </LessonLayout>
             } 
@@ -67,7 +80,7 @@ function App() {
           <Route 
             path="/lesson/2" 
             element={
-              <LessonLayout title="HTTP Proxies">
+              <LessonLayout title="HTTP Proxies" onLogout={handleLogout}>
                 <HTTPProxies />
               </LessonLayout>
             } 
@@ -75,7 +88,7 @@ function App() {
           <Route 
             path="/lesson/3" 
             element={
-              <LessonLayout title="CIA Triad">
+              <LessonLayout title="CIA Triad" onLogout={handleLogout}>
                 <CIATriad />
               </LessonLayout>
             } 
@@ -83,7 +96,7 @@ function App() {
           <Route 
             path="/lesson/4" 
             element={
-              <LessonLayout title="Assessment">
+              <LessonLayout title="Assessment" onLogout={handleLogout}>
                 <Assessment />
               </LessonLayout>
             } 

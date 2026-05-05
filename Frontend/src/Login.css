@@ -44,6 +44,11 @@
   font-size: 13px;
 }
 
+.message.success {
+  color: #15803d;
+  background: #f0fdf4;
+}
+
 .submit {
   padding: 10px 12px;
   background: #0ea5e9;

@@ -1,56 +1,24 @@
-import express from "express";
+/*import express from "express";
 import cors from "cors";
 import bcrypt from "bcryptjs";
-import sqlite3Package from "sqlite3";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
+import { createClient } from "@supabase/supabase-js";
 
-const sqlite3 = sqlite3Package.verbose();
-const db = new sqlite3.Database("./server/users.db", (err) => {
-  if (err) console.error("Failed to open DB", err);
-});
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  console.error("Missing Supabase credentials in environment variables");
+  process.exit(1);
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 const app = express();
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
-
-// Ensure schema includes fields for brute-force protection
-db.serialize(() => {
-  db.run(
-    `CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      username TEXT UNIQUE,
-      password_hash TEXT,
-      failed_attempts INTEGER DEFAULT 0,
-      locked_until INTEGER
-    )`,
-  );
-
-  // Add columns if older DB lacks them
-  db.all("PRAGMA table_info(users)", (err, rows) => {
-    if (!err && rows) {
-      const names = rows.map((r) => r.name);
-      if (!names.includes("failed_attempts")) {
-        db.run(
-          "ALTER TABLE users ADD COLUMN failed_attempts INTEGER DEFAULT 0",
-        );
-      }
-      if (!names.includes("locked_until")) {
-        db.run("ALTER TABLE users ADD COLUMN locked_until INTEGER");
-      }
-    }
-  });
-
-  const defaultUsername = "testuser";
-  const defaultPassword = "Test1234";
-  const salt = bcrypt.genSaltSync(12);
-  const hash = bcrypt.hashSync(defaultPassword, salt);
-  db.run("INSERT OR IGNORE INTO users(username,password_hash) VALUES (?,?)", [
-    defaultUsername,
-    hash,
-  ]);
-});
 
 const BANNED = ["123admin", "123456", "qwerty", "admin"];
 
@@ -94,17 +62,62 @@ const loginLimiter = rateLimit({
   },
 });
 
+app.post("/api/signup", (req, res) => {
+  const { username, password } = req.body;
+  const validationError = validateInput(username, password);
+  if (validationError) return res.status(400).json({ error: validationError });
+
+  // Check if username already exists
+  supabase
+    .from("users")
+    .select("id")
+    .eq("username", username)
+    .single()
+    .then(({ data, error }) => {
+      if (error && error.code !== "PGRST116") {
+        // PGRST116 means no rows found, which is good
+        console.error("Database error:", error);
+        return res.status(500).json({ error: "Server error" });
+      }
+
+      if (data) {
+        return res.status(409).json({ error: "Username already exists" });
+      }
+
+      // Hash password and insert
+      const salt = bcrypt.genSaltSync(12);
+      const hash = bcrypt.hashSync(password, salt);
+
+      supabase
+        .from("users")
+        .insert([{ username, password_hash: hash, failed_attempts: 0 }])
+        .then(({ error }) => {
+          if (error) {
+            console.error("Insert error:", error);
+            if (error.code === "23505") {
+              // Unique constraint violation
+              return res.status(409).json({ error: "Username already exists" });
+            }
+            return res.status(500).json({ error: "Server error" });
+          }
+          return res.json({ success: true, message: "Account created successfully" });
+        });
+    });
+});
+
 app.post("/api/login", loginLimiter, (req, res) => {
   const { username, password } = req.body;
   const validationError = validateInput(username, password);
   if (validationError) return res.status(400).json({ error: validationError });
 
-  db.get(
-    "SELECT id, password_hash, failed_attempts, locked_until FROM users WHERE username = ?",
-    [username],
-    (err, row) => {
-      if (err) {
-        console.error(err);
+  supabase
+    .from("users")
+    .select("id, password_hash, failed_attempts, locked_until")
+    .eq("username", username)
+    .single()
+    .then(({ data: row, error }) => {
+      if (error && error.code !== "PGRST116") {
+        console.error(error);
         return res.status(500).json({ error: "Server error" });
       }
 
@@ -127,14 +140,14 @@ app.post("/api/login", loginLimiter, (req, res) => {
 
         if (result) {
           // Successful login - reset counters
-          db.run(
-            "UPDATE users SET failed_attempts = 0, locked_until = NULL WHERE id = ?",
-            [row.id],
-            (uerr) => {
+          supabase
+            .from("users")
+            .update({ failed_attempts: 0, locked_until: null })
+            .eq("id", row.id)
+            .then(({ error: uerr }) => {
               if (uerr) console.error("Failed to reset failed_attempts", uerr);
               return res.json({ success: true });
-            },
-          );
+            });
         } else {
           const failed = (row.failed_attempts || 0) + 1;
           const threshold = 5;
@@ -142,10 +155,11 @@ app.post("/api/login", loginLimiter, (req, res) => {
           const lockedUntil =
             failed >= threshold ? Date.now() + lockDuration : null;
 
-          db.run(
-            "UPDATE users SET failed_attempts = ?, locked_until = ? WHERE id = ?",
-            [failed, lockedUntil, row.id],
-            (uerr) => {
+          supabase
+            .from("users")
+            .update({ failed_attempts: failed, locked_until: lockedUntil })
+            .eq("id", row.id)
+            .then(({ error: uerr }) => {
               if (uerr) console.error("Failed to update failed_attempts", uerr);
               if (lockedUntil)
                 return res
@@ -154,15 +168,13 @@ app.post("/api/login", loginLimiter, (req, res) => {
                     error: "Account locked due to too many failed attempts",
                   });
               return res.status(401).json({ error: "Invalid credentials" });
-            },
-          );
+            });
         }
       });
-    },
-  );
+    });
 });
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Auth server listening on port ${PORT}`);
-});
+});*/

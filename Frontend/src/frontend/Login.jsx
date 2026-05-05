@@ -27,12 +27,13 @@ function validateUsername(username) {
   return true;
 }
 
-export default function Login({ onLogin = () => {} }) {
+export default function Login({ onLogin = () => {}, onSwitchToSignUp = () => {} }) {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   function validate() {
     // Username validation
@@ -83,7 +84,7 @@ export default function Login({ onLogin = () => {} }) {
     }
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:4000/api/login", {
+      const res = await fetch("http://localhost:5000/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -124,13 +125,33 @@ export default function Login({ onLogin = () => {} }) {
 
         <label className="field">
           <span>Password</span>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete="current-password"
-            required
-          />
+          <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+            <input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+              required
+              style={{ width: "100%", paddingRight: "40px" }}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: "absolute",
+                right: "12px",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                fontSize: "20px",
+                padding: "0",
+                color: "#6b7280"
+              }}
+              title={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? "👁️" : "👁️‍🗨️"}
+            </button>
+          </div>
         </label>
 
         {message && <div className="message">{message}</div>}
@@ -138,6 +159,10 @@ export default function Login({ onLogin = () => {} }) {
         <button type="submit" className="submit" disabled={loading}>
           {loading ? "Signing in…" : "Sign in"}
         </button>
+
+        <div style={{ textAlign: "center", marginTop: "1rem" }}>
+          <p>Don't have an account? <button type="button" onClick={onSwitchToSignUp} style={{ background: "none", border: "none", color: "#007bff", cursor: "pointer", textDecoration: "underline" }}>Sign up</button></p>
+        </div>
       </form>
     </div>
   );
