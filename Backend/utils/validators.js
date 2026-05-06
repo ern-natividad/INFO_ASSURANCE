@@ -20,7 +20,6 @@ export function validateInput(username, password) {
     return "Invalid username";
   if (!password || typeof password !== "string" || password.length < 8)
     return "Invalid password";
-  if (!isAlphanumeric(password)) return "Password must be alphanumeric";
   if (!hasLetterAndNumber(password))
     return "Password must include letters and numbers";
   const low = password.toLowerCase();

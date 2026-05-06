@@ -38,27 +38,37 @@ export default function Login({ onLogin = () => {} }) {
   function validate() {
     if (!username.trim()) return { ok: false, message: "Username is required" };
     if (!validateUsername(username))
-      return { ok: false, message: "Username must be 3-20 alphanumeric characters" };
-    
+      return {
+        ok: false,
+        message: "Username must be 3-20 alphanumeric characters",
+      };
+
     if (!password || password.length < 8)
       return { ok: false, message: "Password must be at least 8 characters" };
     if (password.length > 128)
       return { ok: false, message: "Password is too long" };
-    if (!isAlphanumeric(password))
-      return { ok: false, message: "Password must be alphanumeric (letters and digits only)" };
     if (!hasLetterAndNumber(password))
-      return { ok: false, message: "Password must include letters and numbers" };
-    
+      return {
+        ok: false,
+        message: "Password must include letters and numbers",
+      };
+
     const low = password.toLowerCase();
     for (const b of BANNED) {
       if (low.includes(b))
-        return { ok: false, message: "Password contains a forbidden substring" };
+        return {
+          ok: false,
+          message: "Password contains a forbidden substring",
+        };
     }
     if (containsSqlLike(password) || containsSqlLike(username))
       return { ok: false, message: "Input contains unsafe patterns" };
     if (containsXssLike(password) || containsXssLike(username))
-      return { ok: false, message: "Input contains potentially dangerous content" };
-    
+      return {
+        ok: false,
+        message: "Input contains potentially dangerous content",
+      };
+
     return { ok: true };
   }
 
@@ -72,21 +82,27 @@ export default function Login({ onLogin = () => {} }) {
     }
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
+        },
+      );
       const data = await res.json();
       if (res.ok) {
         // Save username to localStorage for use in LessonLayout
-        console.log('Login successful! Saving username:', username);
-        localStorage.setItem('username', username);
-        console.log('Username saved. localStorage now contains:', localStorage.getItem('username'));
+        console.log("Login successful! Saving username:", username);
+        localStorage.setItem("username", username);
+        console.log(
+          "Username saved. localStorage now contains:",
+          localStorage.getItem("username"),
+        );
         onLogin();
         navigate("/");
       } else {
-        console.log('Login failed. Response:', data);
+        console.log("Login failed. Response:", data);
         setMessage(data?.error || "Login failed");
       }
     } catch (err) {
@@ -113,7 +129,13 @@ export default function Login({ onLogin = () => {} }) {
 
         <label className="field">
           <span>Password</span>
-          <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+          <div
+            style={{
+              position: "relative",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
             <input
               type={showPassword ? "text" : "password"}
               value={password}
@@ -132,7 +154,7 @@ export default function Login({ onLogin = () => {} }) {
                 border: "none",
                 cursor: "pointer",
                 fontSize: "18px",
-                color: "#94a3b8"
+                color: "#94a3b8",
               }}
             >
               {showPassword ? "👁️" : "👁️‍🗨️"}
@@ -146,9 +168,27 @@ export default function Login({ onLogin = () => {} }) {
           {loading ? "Signing in…" : "Sign in"}
         </button>
 
-        <div style={{ textAlign: "center", marginTop: "1.5rem", fontSize: "0.9rem", color: "#64748b" }}>
-          Don't have an account? 
-          <button type="button" onClick={() => navigate('/signup')} style={{ background: "none", border: "none", color: "#2563eb", cursor: "pointer", fontWeight: "600", marginLeft: "5px" }}>
+        <div
+          style={{
+            textAlign: "center",
+            marginTop: "1.5rem",
+            fontSize: "0.9rem",
+            color: "#64748b",
+          }}
+        >
+          Don't have an account?
+          <button
+            type="button"
+            onClick={() => navigate("/signup")}
+            style={{
+              background: "none",
+              border: "none",
+              color: "#2563eb",
+              cursor: "pointer",
+              fontWeight: "600",
+              marginLeft: "5px",
+            }}
+          >
             Sign up
           </button>
         </div>
