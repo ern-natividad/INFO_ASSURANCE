@@ -1,18 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import '../App.css';
+import React, { useState, useEffect, useRef } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import "../App.css";
 
 export default function LessonLayout({ children, title }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
-  
+
   // Get username from localStorage
-  const username = localStorage.getItem('username') || 'User';
+  const username = localStorage.getItem("username") || "User";
   const avatarLetters = username.substring(0, 2).toUpperCase();
 
-  const currentPathId = location.pathname.split('/').pop();
+  const currentPathId = location.pathname.split("/").pop();
   const currentPage = parseInt(currentPathId) || 1;
 
   const pages = [
@@ -36,7 +36,6 @@ export default function LessonLayout({ children, title }) {
     <div className="lesson-layout-wrapper">
       <header className="sticky-topbar">
         <div className="topbar-container">
-          
           {/* Left: Title - Now wrapped in a container with a fixed min-width */}
           <div className="topbar-left">
             <h2 className="topbar-title">{title}</h2>
@@ -48,7 +47,7 @@ export default function LessonLayout({ children, title }) {
               <Link
                 key={page.number}
                 to={`/lesson/${page.number}`}
-                className={`nav-step ${currentPage === page.number ? 'active' : ''}`}
+                className={`nav-step ${currentPage === page.number ? "active" : ""}`}
               >
                 <span className="step-num">{page.number}</span>
                 <span className="step-text">{page.title}</span>
@@ -58,8 +57,8 @@ export default function LessonLayout({ children, title }) {
 
           {/* Right: User Profile - Matches the left width for perfect balance */}
           <div className="topbar-right" ref={dropdownRef}>
-            <button 
-              className="user-profile-btn" 
+            <button
+              className="user-profile-btn"
               onClick={() => setShowDropdown(!showDropdown)}
               aria-label="User menu"
             >
@@ -72,13 +71,19 @@ export default function LessonLayout({ children, title }) {
                   <strong>{username}</strong>
                 </div>
                 <hr />
-                <button className="dropdown-item logout-item" onClick={() => navigate('/login')}>
+                <button
+                  className="dropdown-item logout-item"
+                  onClick={() => {
+                    sessionStorage.removeItem("loggedIn");
+                    localStorage.removeItem("username");
+                    navigate("/login");
+                  }}
+                >
                   Sign Out
                 </button>
               </div>
             )}
           </div>
-
         </div>
       </header>
 
