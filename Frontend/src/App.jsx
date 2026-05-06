@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, Link } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  Link,
+} from "react-router-dom";
 import "./App.css";
 import Login from "./auth/Login.jsx";
 import SignUp from "./auth/SignUp.jsx";
@@ -13,7 +19,7 @@ const pages = [
   { number: 1, title: "SQL Injection Fundamentals" },
   { number: 2, title: "Broken Authentication" },
   { number: 3, title: "Injection & Auth Assessment" },
-  { number: 4, title: "Try It Activities" }
+  { number: 4, title: "Try It Activities" },
 ];
 
 function Dashboard() {
@@ -24,13 +30,13 @@ function Dashboard() {
           <div className="celebration-emoji">🔐</div>
           <h1 className="welcome-title-large">Authentication Successful</h1>
           <p className="welcome-subtitle-large">
-            Your account is verified and secure. You now have full access to 
-            the WebGoat security curriculum and interactive labs.
+            Your account is verified and secure. You now have full access to the
+            WebGoat security curriculum and interactive labs.
           </p>
         </div>
-        
+
         <div className="action-area centered-content">
-          <Link to="/lesson/1" className="submit lesson-link-btn-large">
+          <Link to="/login" className="submit lesson-link-btn-large">
             Start Learning Now
           </Link>
         </div>
@@ -40,7 +46,9 @@ function Dashboard() {
 }
 
 function App() {
-  const [loggedIn, setLoggedIn] = useState(() => !!sessionStorage.getItem("loggedIn"));
+  const [loggedIn, setLoggedIn] = useState(
+    () => !!sessionStorage.getItem("loggedIn"),
+  );
   const [showSignUp, setShowSignUp] = useState(false);
   const handleLogout = () => {
     sessionStorage.removeItem("loggedIn");
@@ -52,30 +60,33 @@ function App() {
     return (
       <Router>
         <div>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/lesson" element={<Navigate to="/lesson/1" replace />} />
-          {pages.map((page) => (
-            <Route 
-              key={page.number}
-              path={`/lesson/${page.number}`} 
-              element={
-                <LessonLayout title={page.title}>
-                  {page.number === 1 && <SQLInjection />}
-                  {page.number === 2 && <BrokenAuthentication />}
-                  {page.number === 3 && <InjectionAuthAssessement />}
-                  {page.number === 4 && <TryItActivities />}
-                </LessonLayout>
-              } 
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/" element={<Dashboard />} />
+            <Route
+              path="/lesson"
+              element={<Navigate to="/lesson/1" replace />}
             />
-          ))}
-        </Routes>
-      </div>
-    </Router>
-  );
-}
+            {pages.map((page) => (
+              <Route
+                key={page.number}
+                path={`/lesson/${page.number}`}
+                element={
+                  <LessonLayout title={page.title}>
+                    {page.number === 1 && <SQLInjection />}
+                    {page.number === 2 && <BrokenAuthentication />}
+                    {page.number === 3 && <InjectionAuthAssessement />}
+                    {page.number === 4 && <TryItActivities />}
+                  </LessonLayout>
+                }
+              />
+            ))}
+          </Routes>
+        </div>
+      </Router>
+    );
+  }
 }
 
 export default App;
