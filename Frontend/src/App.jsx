@@ -36,7 +36,7 @@ function Dashboard() {
         </div>
 
         <div className="action-area centered-content">
-          <Link to="/login" className="submit lesson-link-btn-large">
+          <Link to="/lesson/1" className="submit lesson-link-btn-large">
             Start Learning Now
           </Link>
         </div>
@@ -56,37 +56,74 @@ function App() {
     setShowSignUp(false);
   };
 
-  if (!loggedIn) {
-    return (
-      <Router>
-        <div>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/" element={<Dashboard />} />
-            <Route
-              path="/lesson"
-              element={<Navigate to="/lesson/1" replace />}
-            />
-            {pages.map((page) => (
-              <Route
-                key={page.number}
-                path={`/lesson/${page.number}`}
-                element={
-                  <LessonLayout title={page.title}>
-                    {page.number === 1 && <SQLInjection />}
-                    {page.number === 2 && <BrokenAuthentication />}
-                    {page.number === 3 && <InjectionAuthAssessement />}
-                    {page.number === 4 && <TryItActivities />}
-                  </LessonLayout>
-                }
+  return (
+    <Router>
+      <Routes>
+        {/* Default: redirect to login */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+
+        {/* Auth routes */}
+        <Route
+          path="/login"
+          element={
+            loggedIn ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <Login
+                onLogin={() => {
+                  sessionStorage.setItem("loggedIn", "1");
+                  setLoggedIn(true);
+                }}
               />
-            ))}
-          </Routes>
-        </div>
-      </Router>
-    );
-  }
+            )
+          }
+        />
+        <Route
+          path="/signup"
+          element={loggedIn ? <Navigate to="/dashboard" replace /> : <SignUp />}
+        />
+
+        {/* Dashboard after login */}
+        <Route
+          path="/dashboard"
+          element={loggedIn ? <Dashboard /> : <Navigate to="/login" replace />}
+        />
+
+        {/* Lesson routes - protected */}
+        <Route
+          path="/lesson"
+          element={
+            loggedIn ? (
+              <Navigate to="/lesson/1" replace />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        {pages.map((page) => (
+          <Route
+            key={page.number}
+            path={`/lesson/${page.number}`}
+            element={
+              loggedIn ? (
+                <LessonLayout title={page.title} onLogout={handleLogout}>
+                  {page.number === 1 && <SQLInjection />}
+                  {page.number === 2 && <BrokenAuthentication />}
+                  {page.number === 3 && <InjectionAuthAssessement />}
+                  {page.number === 4 && <TryItActivities />}
+                </LessonLayout>
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+        ))}
+
+        {/* Catch-all */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </Router>
+  );
 }
 
 export default App;

@@ -95,12 +95,9 @@ export default function Login({ onLogin = () => {} }) {
         // Save username to localStorage for use in LessonLayout
         console.log("Login successful! Saving username:", username);
         localStorage.setItem("username", username);
-        console.log(
-          "Username saved. localStorage now contains:",
-          localStorage.getItem("username"),
-        );
-        onLogin();
-        navigate("/");
+        sessionStorage.setItem("loggedIn", "1");
+        if (onLogin) onLogin();
+        navigate("/dashboard");
       } else {
         console.log("Login failed. Response:", data);
         setMessage(data?.error || "Login failed");
