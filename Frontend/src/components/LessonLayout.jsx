@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../App.css";
 
-export default function LessonLayout({ children, title }) {
+export default function LessonLayout({ children, title, onLogout }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
@@ -76,6 +76,7 @@ export default function LessonLayout({ children, title }) {
                   onClick={() => {
                     sessionStorage.removeItem("loggedIn");
                     localStorage.removeItem("username");
+                    if (onLogout) onLogout();
                     navigate("/login");
                   }}
                 >
